@@ -6,6 +6,15 @@ A command-line cybersecurity tool for investigating IP addresses and domains. Bu
 
 ---
 
+A raw HTTP request looks like this:
+``` bash
+GET /json/8.8.8.8 HTTP/1.1
+Host: ip-api.com
+```
+It says "Hey ip-api.com, GET me the page at /json/8.8.8.8".
+
+
+
 ## Background: IP Address Fundamentals
 
 ### What Is an IP Address?
