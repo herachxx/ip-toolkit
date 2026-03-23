@@ -5,4 +5,18 @@ IP address - a unique string of numbers separated by full stops that identifies 
 
 ## Public & Private IP addresses
 **Public IP address** is given by the Internet Service Provider (ISP).
-**Private IP address** is given by network router
+**Private IP address** is given by network router.
+
+## How to find out my IP address?
+**Public IP address:** (whatsmyip)[https://whatsmyip.com/]   
+**Private IP address:**   
+
+In Windows:   
+``` bash
+ipconfig
+```
+
+In Linux / Mac:   
+``` bash
+ifconfig
+```
