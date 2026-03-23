@@ -91,7 +91,7 @@ python ip_toolkit.py all 8.8.8.8
 
 ## 🔧 Module Reference
 
-### `info` — Geolocation & ISP
+### `info` - Geolocation & ISP
 ```bash
 python ip_toolkit.py info <IP or domain>
 ```
