@@ -1,13 +1,15 @@
+
 ```
-██╗██████╗     ████████╗ ██████╗  ██████╗ ██╗      ██╗  ██╗██╗████████╗
-██║██╔══██╗    ╚══██╔══╝██╔═══██╗██╔═══██╗██║      ██║ ██╔╝██║╚══██╔══╝
-██║██████╔╝       ██║   ██║   ██║██║   ██║██║      █████╔╝ ██║   ██║
-██║██╔═══╝        ██║   ██║   ██║██║   ██║██║      ██╔═██╗ ██║   ██║
-██║██║            ██║   ╚██████╔╝╚██████╔╝███████╗ ██║  ██╗██║   ██║
-╚═╝╚═╝            ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝ ╚═╝  ╚═╝╚═╝   ╚═╝
+                    ██╗██████╗     ████████╗ ██████╗  ██████╗ ██╗      ██╗  ██╗██╗████████╗
+                    ██║██╔══██╗    ╚══██╔══╝██╔═══██╗██╔═══██╗██║      ██║ ██╔╝██║╚══██╔══╝
+                    ██║██████╔╝       ██║   ██║   ██║██║   ██║██║      █████╔╝ ██║   ██║
+                    ██║██╔═══╝        ██║   ██║   ██║██║   ██║██║      ██╔═██╗ ██║   ██║
+                    ██║██║            ██║   ╚██████╔╝╚██████╔╝███████╗ ██║  ██╗██║   ██║
+                    ╚═╝╚═╝            ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝ ╚═╝  ╚═╝╚═╝   ╚═╝
 ```
 
 <div align="center">
+
 
 ![Python](https://img.shields.io/badge/Python-3.10+-00ff41?style=for-the-badge&logo=python&logoColor=00ff41&labelColor=0d0d0d)
 ![Modules](https://img.shields.io/badge/Modules-4-00ff41?style=for-the-badge&logoColor=00ff41&labelColor=0d0d0d)
@@ -15,33 +17,34 @@
 ![License](https://img.shields.io/badge/License-MIT-00ff41?style=for-the-badge&labelColor=0d0d0d)
 ![Status](https://img.shields.io/badge/Status-ACTIVE-00ff41?style=for-the-badge&labelColor=0d0d0d)
 
-**A modular command-line OSINT toolkit for investigating IP addresses and domains.**
+**A modular command-line OSINT toolkit for investigating IP addresses and domains.**   
 *Geolocation. Port scanning. Reputation checks. WHOIS. All in one tool.*
 
 </div>
 
 ---
 
-> ⚠️ **LEGAL NOTICE:** This tool is for educational purposes and authorized security testing only. Only use it against systems and networks you own or have **explicit written permission** to test. Unauthorized scanning is illegal in most jurisdictions. The author takes no responsibility for misuse.
+> **(!) LEGAL NOTICE:** This tool is for educational purposes and authorized security testing only.   
+Unauthorized scanning is illegal in most jurisdictions. The author takes no responsibility for misuse.   
 
 ---
 
 ## `> OVERVIEW`
 
-**IP Toolkit** is a modular, command-line OSINT and network reconnaissance tool built in Python. It combines four independent investigation modules into a single unified interface — giving you geolocation data, open port detection, blocklist reputation checks, and WHOIS registration data with a single command.
+**IP Toolkit** is a modular, command-line OSINT and network reconnaissance tool built in Python. It combines four independent investigation modules into a single unified interface giving you geolocation data, open port detection, blocklist reputation checks, and WHOIS registration data with a single command.   
 
-Each module can be run individually or all at once for a full snapshot of any IP address or domain.
+Each module can be run individually or all at once for a full snapshot of any IP address or domain.   
 
 ---
 
 ## `> MODULES`
 
 ```
-[+] info       — Geolocation, ISP, ASN, timezone, VPN/proxy/mobile detection
-[+] scan       — Multi-threaded TCP port scanner with risk ratings and banner grabbing
-[+] reputation — DNS blocklist checks across 5 major blocklists + AbuseIPDB integration
-[+] whois      — WHOIS registration data for IP blocks and domain names
-[+] all        — Runs all four modules in sequence for a full recon snapshot
+[+] info       - Geolocation, ISP, ASN, timezone, VPN/proxy/mobile detection
+[+] scan       - Multi-threaded TCP port scanner with risk ratings and banner grabbing
+[+] reputation - DNS blocklist checks across 5 major blocklists + AbuseIPDB integration
+[+] whois      - WHOIS registration data for IP blocks and domain names
+[+] all        - Runs all four modules in sequence for a full recon snapshot
 ```
 
 ---
@@ -53,8 +56,7 @@ $ python ip_toolkit.py all 185.220.101.1
 
   ┌────────────────────────────────────────────────────────────┐
   │  IP GEOLOCATION & INFO                                     │
-  └────────────────────────────────────────────────────────────┘
-
+  └────────────────────────────────────────────────────────────┘   
   Query IP         185.220.101.1
   Country          Germany
   Region           Brandenburg
@@ -67,18 +69,16 @@ $ python ip_toolkit.py all 185.220.101.1
 
   ┌────────────────────────────────────────────────────────────┐
   │  PORT SCANNER  (Top 20 common ports)                       │
-  └────────────────────────────────────────────────────────────┘
-
+  └────────────────────────────────────────────────────────────┘   
   PORT     SERVICE        RISK       BANNER / NOTE
-  ──────── ────────────── ────────── ────────────────────────────────────────
+  ──────── ────────────── ────────── ──────────────────────────
   22       SSH            LOW
   80       HTTP           LOW
   443      HTTPS          LOW
 
   ┌────────────────────────────────────────────────────────────┐
   │  IP REPUTATION CHECK                                       │
-  └────────────────────────────────────────────────────────────┘
-
+  └────────────────────────────────────────────────────────────┘   
   Checking 185.220.101.1 against 5 DNS blocklists...
 
   [LISTED]  Spamhaus XBL (exploits/botnets)
@@ -153,7 +153,7 @@ python ip_toolkit.py all 8.8.8.8 --timeout 1.0 --threads 100
 
 ## `> MODULE REFERENCE`
 
-### `info` — Geolocation & ISP
+### `info` - Geolocation & ISP
 ```bash
 python ip_toolkit.py info <IP or domain>
 ```
@@ -162,20 +162,20 @@ Queries the [ip-api.com](https://ip-api.com) free endpoint. No API key required.
 
 **Returns:**
 ```
-[+] Query IP       — the resolved IP address
-[+] Country        — registered country
-[+] Region / City  — approximate physical location
-[+] Coordinates    — latitude and longitude
-[+] Timezone       — local timezone
-[+] ISP            — Internet Service Provider
-[+] Organisation   — network owner
-[+] ASN            — Autonomous System Number
-[+] Flags          — PROXY / VPN / HOSTING / MOBILE detection
+[+] Query IP       - the resolved IP address
+[+] Country        - registered country
+[+] Region / City  - approximate physical location
+[+] Coordinates    - latitude and longitude
+[+] Timezone       - local timezone
+[+] ISP            - Internet Service Provider
+[+] Organisation   - network owner
+[+] ASN            - Autonomous System Number
+[+] Flags          - PROXY / VPN / HOSTING / MOBILE detection
 ```
 
 ---
 
-### `scan` — Port Scanner
+### `scan` - Port Scanner
 ```bash
 python ip_toolkit.py scan <IP or domain> [options]
 
@@ -201,21 +201,21 @@ Uses multi-threaded TCP connections to probe ports concurrently. Attempts banner
 
 ---
 
-### `reputation` — Blocklist & Abuse Check
+### `reputation` - Blocklist & Abuse Check
 ```bash
 python ip_toolkit.py reputation <IP>
 ```
 
 **DNS Blocklists checked (no API key required):**
 ```
-[+] Spamhaus ZEN        — combined spam/exploit blocklist
-[+] Spamhaus XBL        — exploits and botnet IPs
-[+] SpamCop             — spam source blocklist
-[+] SORBS               — spam and open relay blocklist
-[+] Barracuda           — reputation-based blocklist
+[+] Spamhaus ZEN        - combined spam/exploit blocklist
+[+] Spamhaus XBL        - exploits and botnet IPs
+[+] SpamCop             - spam source blocklist
+[+] SORBS               - spam and open relay blocklist
+[+] Barracuda           - reputation-based blocklist
 ```
 
-**Enhanced mode — AbuseIPDB integration (optional):**
+**Enhanced mode - AbuseIPDB integration (optional):**
 
 Get a free API key at [abuseipdb.com](https://www.abuseipdb.com), then:
 
@@ -240,7 +240,7 @@ With the key set, the tool will also report:
 
 ---
 
-### `whois` — WHOIS Lookup
+### `whois` - WHOIS Lookup
 ```bash
 python ip_toolkit.py whois <IP or domain>
 ```
@@ -249,7 +249,7 @@ Uses `python-whois` if installed, with a raw socket fallback so it works even wi
 
 **Returns:**
 ```
-[+] Organisation   — who owns this IP block or domain
+[+] Organisation   - who owns this IP block or domain
 [+] CIDR / Netblock
 [+] Country
 [+] Abuse contact email
@@ -260,7 +260,7 @@ Uses `python-whois` if installed, with a raw socket fallback so it works even wi
 
 ---
 
-### `all` — Full Recon
+### `all` - Full Recon
 ```bash
 python ip_toolkit.py all <IP or domain> [--timeout SECONDS] [--threads N]
 ```
@@ -341,7 +341,7 @@ dig google.com
 | Port | Service | Risk | Why |
 |------|---------|------|-----|
 | 21 | FTP | MEDIUM | Plaintext credentials, anonymous login |
-| 23 | Telnet | HIGH | Fully plaintext — never expose to internet |
+| 23 | Telnet | HIGH | Fully plaintext - never expose to internet |
 | 135 | MS-RPC | HIGH | Common Windows attack vector |
 | 139 | NetBIOS | HIGH | Information disclosure, legacy Windows |
 | 445 | SMB | HIGH | EternalBlue, WannaCry ransomware vector |
@@ -352,7 +352,7 @@ dig google.com
 
 ### DNS Blocklists (DNSBL)
 
-Blocklists are databases of IPs known to send spam, host malware, or run botnets. Checking an IP against a blocklist requires no API — just a reverse DNS query:
+Blocklists are databases of IPs known to send spam, host malware, or run botnets. Checking an IP against a blocklist requires no API - just a reverse DNS query:
 
 ```
 # Format:
@@ -393,11 +393,11 @@ An ASN identifies a network under a single administrative control (like Google, 
 ## `> LIMITATIONS`
 
 ```
-[-] Geolocation is approximate — city-level accuracy varies
+[-] Geolocation is approximate - city-level accuracy varies
 [-] ip-api.com free tier limited to 45 requests per minute
 [-] AbuseIPDB requires a free API key for enhanced reports
-[-] IPv4 only — IPv6 not yet supported
-[-] Port scanner uses TCP only — UDP ports not detected
+[-] IPv4 only - IPv6 not yet supported
+[-] Port scanner uses TCP only - UDP ports not detected
 [-] ANSI colours may not display in older Windows CMD versions
 ```
 
@@ -435,7 +435,7 @@ git push origin feature/your-feature-name
 ## `> LICENSE`
 
 ```
-MIT License — do whatever you want with this.
+MIT License - do whatever you want with this.
 See LICENSE for full terms.
 ```
 
