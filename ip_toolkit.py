@@ -33,15 +33,14 @@ def clean_date(date_str):
     return "N/A"
 
 def resolve(target):
-    print( )
     if target.replace(".", "").isnumeric():
         return target
     try:
         ip = socket.gethostbyname(target)
-        print(YELLOW + f" [~] {target} → {ip}" + RESET)
+        print(YELLOW + f"\n [~] {target} → {ip}" + RESET)
         return ip
     except socket.gaierror:
-        print(RED + f" [!] Could not resolve '{target}'" + RESET)
+        print(RED + f"\n [!] Could not resolve '{target}'" + RESET)
         sys.exit(1)
 
 def http_get(host, path):
@@ -99,42 +98,58 @@ def get_info(target):
 def get_whois(target):
     section("WHOIS")
     try:
-        raw = whois_query("whois.iana.org", target)
-        refer = None
-        for line in raw.splitlines():
-            if line.lower().startswith("refer:"):
-                refer = line.split(":", 1)[1].strip()
-                break
-        if refer:
-            raw = whois_query(refer, target)
+        is_ip = target.replace(".", "").isnumeric()
 
-        fields = {
-            "Domain Name":          None,
-            "Registrar":            None,
-            "Creation Date":        None,
-            "Updated Date":         None,
-            "Registry Expiry Date": None,
-            "Name Server":          [],
-            "DNSSEC":               None,
-        }
+        if is_ip:
+            raw = whois_query("whois.arin.net", f"+ {target}")
+            print()
+            for line in raw.splitlines():
+                line = line.strip()
+                if not line or line.startswith("#") or line.startswith("%"):
+                    continue
+                for prefix in ("NetName:", "Organization:", "OrgName:", "Country:", "CIDR:", "NetRange:"):
+                    if line.startswith(prefix):
+                        key, val = line.split(":", 1)
+                        print(GREEN + f"  {key:<14}: {val.strip()}" + RESET)
+                        break
+        else:
+            # Domain WHOIS
+            raw = whois_query("whois.iana.org", target)
+            refer = None
+            for line in raw.splitlines():
+                if line.lower().startswith("refer:"):
+                    refer = line.split(":", 1)[1].strip()
+                    break
+            if refer:
+                raw = whois_query(refer, target)
 
-        for line in raw.splitlines():
-            line = line.strip()
-            for key in fields:
-                if line.lower().startswith(key.lower() + ":"):
-                    value = line.split(":", 1)[1].strip()
-                    if key == "Name Server":
-                        fields[key].append(value)
-                    elif fields[key] is None:
-                        fields[key] = value
+            fields = {
+                "Domain Name":          None,
+                "Registrar":            None,
+                "Creation Date":        None,
+                "Updated Date":         None,
+                "Registry Expiry Date": None,
+                "Name Server":          [],
+                "DNSSEC":               None,
+            }
 
-        print(GREEN + f"  Domain       : {fields['Domain Name']}"          + RESET)
-        print(GREEN + f"  Registrar    : {fields['Registrar']}"              + RESET)
-        print(GREEN + f"  Created      : {clean_date(fields['Creation Date'])}" + RESET)
-        print(GREEN + f"  Updated      : {clean_date(fields['Updated Date'])}" + RESET)
-        print(GREEN + f"  Expires      : {clean_date(fields['Registry Expiry Date'])}" + RESET)
-        print(GREEN + f"  DNSSEC       : {fields['DNSSEC']}"                 + RESET)
-        print(GREEN + f"  Name Servers : {', '.join(fields['Name Server'][:4])}" + RESET)
+            for line in raw.splitlines():
+                line = line.strip()
+                for key in fields:
+                    if line.lower().startswith(key.lower() + ":"):
+                        value = line.split(":", 1)[1].strip()
+                        if key == "Name Server":
+                            fields[key].append(value)
+                        elif fields[key] is None:
+                            fields[key] = value
+
+            print(GREEN + f"  Domain       : {fields['Domain Name']}"                    + RESET)
+            print(GREEN + f"  Registrar    : {fields['Registrar']}"                      + RESET)
+            print(GREEN + f"  Created      : {clean_date(fields['Creation Date'])}"      + RESET)
+            print(GREEN + f"  Updated      : {clean_date(fields['Updated Date'])}"       + RESET)
+            print(GREEN + f"  Expires      : {clean_date(fields['Registry Expiry Date'])}" + RESET)
+            print(GREEN + f"  DNSSEC       : {fields['DNSSEC']}"                         + RESET)
+            print(GREEN + f"  Name Servers : {', '.join(fields['Name Server'][:4])}"     + RESET)
 
     except Exception as e:
         print(RED + f"  [!] WHOIS failed: {e}" + RESET)
@@ -225,27 +240,76 @@ def check_reputation(target):
 # check_reputation("8.8.8.8")
 # check_reputation("185.220.101.1")
 
-if len(sys.argv) < 3:
+def print_banner():
+    print(CYAN + BOLD + """
+  ██╗██████╗     ████████╗ ██████╗  ██████╗ ██╗      ██╗  ██╗██╗████████╗
+  ██║██╔══██╗       ██╔══╝██╔═══██╗██╔═══██╗██║      ██║ ██╔╝██║╚══██╔══╝
+  ██║██████╔╝       ██║   ██║   ██║██║   ██║██║      █████╔╝ ██║   ██║   
+  ██║██╔═══╝        ██║   ██║   ██║██║   ██║██║      ██╔═██╗ ██║   ██║   
+  ██║██║            ██║   ╚██████╔╝╚██████╔╝███████╗ ██║  ██╗██║   ██║   
+  ╚═╝╚═╝            ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝ ╚═╝  ╚═╝╚═╝   ╚═╝  
+    """ + RESET)
+
+def interactive_menu():
+    print_banner()
+    while True:
+        print(CYAN + "  ─" * 25 + RESET)
+        target = input(GREEN + "\n  Enter target (IP or domain): " + YELLOW).strip()
+        sys.stdout.write(RESET)
+
+        if not target or target.lower() == "q":
+            print(RED + "\n  [~] Goodbye!\n" + RESET)
+            break
+
+        print(CYAN + """
+  [1] IP Info
+  [2] WHOIS
+  [3] Port Scan
+  [4] Reputation
+  [5] All
+  [0] Quit
+        """ + RESET)
+
+        choice = input(GREEN + "  Pick a command: " + YELLOW).strip()
+        sys.stdout.write(RESET)
+
+        if   choice == "1": get_info(target)
+        elif choice == "2": get_whois(target)
+        elif choice == "3": scan_ports(target)
+        elif choice == "4": check_reputation(target)
+        elif choice == "5":
+            ip = resolve(target)
+            get_info(ip)
+            get_whois(target)
+            scan_ports(ip)
+            check_reputation(ip)
+        elif choice == "0":
+            print(RED + "\n  [~] Goodbye!\n" + RESET)
+            break
+        else:
+            print(RED + "\n  [!] Invalid choice.\n" + RESET)
+
+if len(sys.argv) == 1:
+    interactive_menu()
+
+elif len(sys.argv) < 3:
     print(YELLOW + "\n  Usage: python ip_toolkit.py <command> <target>" + RESET)
     print(YELLOW +   "  Commands: info | whois | scan | reputation | all\n" + RESET)
     sys.exit(0)
 
-command = sys.argv[1].lower()
-target  = sys.argv[2]
-
-if command == "info":
-    get_info(target)
-elif command == "whois":
-    get_whois(target)
-elif command == "scan":
-    scan_ports(target)
-elif command == "reputation":
-    check_reputation(target)
-elif command == "all":
-    get_info(target)
-    get_whois(target)
-    scan_ports(target)
-    check_reputation(target)
 else:
-    print(RED + f"\n  [!] Unknown command: '{command}'" + RESET)
-    print(YELLOW + "  Commands: info | whois | scan | reputation | all\n" + RESET)
+    command = sys.argv[1].lower()
+    target  = sys.argv[2]
+
+    if command == "info":           get_info(target)
+    elif command == "whois":        get_whois(target)
+    elif command == "scan":         scan_ports(target)
+    elif command == "reputation":   check_reputation(target)
+    elif command == "all":
+        get_info(target)
+        get_whois(target)
+        scan_ports(target)
+        check_reputation(target)
+    else:
+        print(RED + f"\n  [!] Unknown command: '{command}'" + RESET)
+        print(YELLOW + "  Commands: info | whois | scan | reputation | all\n" + RESET)
