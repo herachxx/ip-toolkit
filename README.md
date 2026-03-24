@@ -10,85 +10,110 @@
 
 <div align="center">
 
-
 ![Python](https://img.shields.io/badge/Python-3.10+-00ff41?style=for-the-badge&logo=python&logoColor=00ff41&labelColor=0d0d0d)
 ![Modules](https://img.shields.io/badge/Modules-4-00ff41?style=for-the-badge&logoColor=00ff41&labelColor=0d0d0d)
-![Dependencies](https://img.shields.io/badge/Dependencies-MINIMAL-00ff41?style=for-the-badge&labelColor=0d0d0d)
+![Dependencies](https://img.shields.io/badge/Dependencies-ZERO-00ff41?style=for-the-badge&labelColor=0d0d0d)
 ![License](https://img.shields.io/badge/License-MIT-00ff41?style=for-the-badge&labelColor=0d0d0d)
 ![Status](https://img.shields.io/badge/Status-ACTIVE-00ff41?style=for-the-badge&labelColor=0d0d0d)
 
-**A modular command-line OSINT toolkit for investigating IP addresses and domains.**   
+**A modular command-line OSINT toolkit for investigating IP addresses and domains.**
 *Geolocation. Port scanning. Reputation checks. WHOIS. All in one tool.*
 
 </div>
 
 ---
 
-> **(!) LEGAL NOTICE:** This tool is for educational purposes and authorized security testing only.   
-Unauthorized scanning is illegal in most jurisdictions. The author takes no responsibility for misuse.   
+> (!) **LEGAL NOTICE:** This tool is for educational purposes and authorized security testing only.  
+> Unauthorized scanning is illegal in most jurisdictions. The author takes no responsibility for misuse.  
 
 ---
 
 ## `> OVERVIEW`
 
-**IP Toolkit** is a modular, command-line OSINT and network reconnaissance tool built in Python. It combines four independent investigation modules into a single unified interface giving you geolocation data, open port detection, blocklist reputation checks, and WHOIS registration data with a single command.   
+**IP Toolkit** is a modular command-line OSINT tool built entirely in Python with zero third-party dependencies. It combines four investigation modules into one unified interface - giving you geolocation data, open port detection, blocklist reputation checks, and WHOIS registration data from a single script.
 
-Each module can be run individually or all at once for a full snapshot of any IP address or domain.   
+It supports two modes: an **interactive menu** (just run the script with no arguments) and a **CLI mode** (pass the command and target directly).
 
 ---
 
-## `> MODULES`
+## `> FEATURES`
 
 ```
-[+] info       - Geolocation, ISP, ASN, timezone, VPN/proxy/mobile detection
-[+] scan       - Multi-threaded TCP port scanner with risk ratings and banner grabbing
-[+] reputation - DNS blocklist checks across 5 major blocklists + AbuseIPDB integration
-[+] whois      - WHOIS registration data for IP blocks and domain names
-[+] all        - Runs all four modules in sequence for a full recon snapshot
+[+] IP geolocation - country, city, region, coordinates, timezone
+[+] ISP, organisation, and ASN identification
+[+] VPN / proxy / hosting / mobile detection
+[+] WHOIS lookup for both domains and raw IP addresses
+[+] Multi-threaded TCP port scanner with risk ratings
+[+] DNS blocklist reputation check across 5 major blocklists
+[+] Interactive menu mode - no arguments needed
+[+] CLI mode - pass commands directly from the terminal
+[+] Automatic domain → IP resolution
+[+] Zero third-party dependencies - pure Python standard library
+[+] Colour-coded terminal output
 ```
 
 ---
 
 ## `> DEMO`
 
-```bash
-$ python ip_toolkit.py all 185.220.101.1
+```
 
-  ┌────────────────────────────────────────────────────────────┐
-  │  IP GEOLOCATION & INFO                                     │
-  └────────────────────────────────────────────────────────────┘   
-  Query IP         185.220.101.1
-  Country          Germany
-  Region           Brandenburg
-  City             Brandenburg an der Havel
-  Coordinates      52.4075, 12.5251
-  Timezone         Europe/Berlin
-  ISP              Stiftung Erneuerbare Freiheit
-  AS               AS60729
-  Flags            PROXY  TOR EXIT NODE
+  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─
 
-  ┌────────────────────────────────────────────────────────────┐
-  │  PORT SCANNER  (Top 20 common ports)                       │
-  └────────────────────────────────────────────────────────────┘   
-  PORT     SERVICE        RISK       BANNER / NOTE
-  ──────── ────────────── ────────── ──────────────────────────
-  22       SSH            LOW
-  80       HTTP           LOW
-  443      HTTPS          LOW
+  Enter target (IP or domain): 185.220.101.1
 
-  ┌────────────────────────────────────────────────────────────┐
-  │  IP REPUTATION CHECK                                       │
-  └────────────────────────────────────────────────────────────┘   
-  Checking 185.220.101.1 against 5 DNS blocklists...
+  [1] IP Info
+  [2] WHOIS
+  [3] Port Scan
+  [4] Reputation
+  [5] All
+  [0] Quit
 
-  [LISTED]  Spamhaus XBL (exploits/botnets)
-  [LISTED]  SORBS
+  Pick a command: 5
 
-  AbuseIPDB Report
-  Abuse Score      97%
-  Total Reports    482
-  Last Reported    2024-03-23T18:42:00+00:00
-  Tor Exit Node    YES
+ ┌─ IP INFO ──────────────────────────────────────┐
+  IP Address   : 185.220.101.1
+  Country      : Germany
+  Region       : Brandenburg
+  City         : Brandenburg an der Havel
+  Coordinates  : 52.4075, 12.5251
+  Timezone     : Europe/Berlin
+  ISP          : Stiftung Erneuerbare Freiheit
+  Organisation : Stiftung Erneuerbare Freiheit
+  ASN          : AS60729 Stiftung Erneuerbare Freiheit
+  Proxy/VPN    : YES (!)
+  Hosting      : NO
+  Mobile       : NO
+ └────────────────────────────────────────────────┘
+
+ ┌─ WHOIS ────────────────────────────────────────┐
+  NetRange      : 185.220.100.0 - 185.220.103.255
+  CIDR          : 185.220.100.0/22
+  NetName       : FREIHEIT
+  Organisation  : Stiftung Erneuerbare Freiheit
+  Country       : DE
+ └────────────────────────────────────────────────┘
+
+ ┌─ PORT SCAN ────────────────────────────────────┐
+  Scanning 185.220.101.1 - 16 ports...
+
+  PORT     SERVICE      RISK
+  22       SSH          LOW
+  80       HTTP         LOW
+  443      HTTPS        LOW
+ └────────────────────────────────────────────────┘
+
+ ┌─ REPUTATION ───────────────────────────────────┐
+  Checking 185.220.101.1 against 5 blocklists...
+
+  [LISTED]  Spamhaus ZEN
+  [CLEAN]   SpamCop
+  [CLEAN]   SORBS
+  [LISTED]  Spamhaus XBL
+  [CLEAN]   Barracuda
+
+  Result: IP is listed on one or more blocklists!
+ └────────────────────────────────────────────────┘
 ```
 
 ---
@@ -100,177 +125,166 @@ $ python ip_toolkit.py all 185.220.101.1
 - Internet connection
 - Terminal with ANSI colour support (CMD, PowerShell, VS Code, Linux/Mac)
 
+**No pip install needed.** Zero dependencies.
+
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/ip-toolkit.git
+git clone https://github.com/herachxx/ip-toolkit.git
 
 # Navigate into the folder
 cd ip-toolkit
 
-# Install optional dependency (recommended)
-pip install -r requirements.txt
+# Run it
+python ip_toolkit.py
 ```
-
-> `python-whois` is the only third-party dependency and is optional. All other modules run on Python's standard library.
 
 ---
 
 ## `> USAGE`
 
-### Basic syntax
+### Interactive mode
+Just run the script with no arguments. You'll get the banner, a menu, and a prompt:
+
+```bash
+python ip_toolkit.py
 ```
-python ip_toolkit.py <module> <target> [options]
+
+Type any IP address or domain name when prompted, then pick a module number.
+
+### CLI mode
+Pass the command and target directly:
+
+```bash
+python ip_toolkit.py <command> <target>
 ```
+
+### Commands
+
+| Command | Description |
+|---------|-------------|
+| `info` | Geolocation, ISP, ASN, VPN/proxy detection |
+| `whois` | WHOIS registration data |
+| `scan` | Multi-threaded port scanner |
+| `reputation` | DNS blocklist checks |
+| `all` | Runs all four modules in sequence |
 
 ### Examples
+
 ```bash
-# Geolocate an IP address
+# Geolocate an IP
 python ip_toolkit.py info 8.8.8.8
 
-# Geolocate a domain name
+# Geolocate a domain
 python ip_toolkit.py info google.com
 
-# Scan the top 20 most common ports
-python ip_toolkit.py scan 192.168.1.1
-
-# Scan specific ports only
-python ip_toolkit.py scan example.com -p 22,80,443,8080
-
-# Check if an IP is blacklisted
-python ip_toolkit.py reputation 185.220.101.1
-
-# WHOIS lookup on a domain
+# WHOIS lookup
 python ip_toolkit.py whois google.com
 
-# Run all modules at once
-python ip_toolkit.py all 8.8.8.8
+# Port scan
+python ip_toolkit.py scan 8.8.8.8
 
-# Full recon with custom scan settings
-python ip_toolkit.py all 8.8.8.8 --timeout 1.0 --threads 100
+# Reputation check
+python ip_toolkit.py reputation 185.220.101.1
+
+# Run everything at once
+python ip_toolkit.py all 8.8.8.8
 ```
+
+> Domains are automatically resolved to their IP address before scanning.
 
 ---
 
 ## `> MODULE REFERENCE`
 
 ### `info` - Geolocation & ISP
-```bash
-python ip_toolkit.py info <IP or domain>
-```
 
-Queries the [ip-api.com](https://ip-api.com) free endpoint. No API key required.
-
-**Returns:**
-```
-[+] Query IP       - the resolved IP address
-[+] Country        - registered country
-[+] Region / City  - approximate physical location
-[+] Coordinates    - latitude and longitude
-[+] Timezone       - local timezone
-[+] ISP            - Internet Service Provider
-[+] Organisation   - network owner
-[+] ASN            - Autonomous System Number
-[+] Flags          - PROXY / VPN / HOSTING / MOBILE detection
-```
-
----
-
-### `scan` - Port Scanner
-```bash
-python ip_toolkit.py scan <IP or domain> [options]
-
-  -p, --ports     Comma-separated ports  e.g. 22,80,443   (default: top 20)
-  -t, --timeout   Socket timeout in seconds                (default: 0.5)
-  --threads       Number of concurrent worker threads      (default: 50)
-```
-
-Uses multi-threaded TCP connections to probe ports concurrently. Attempts banner grabbing on open ports. All open ports are risk-rated:
-
-| Risk | Colour | Examples |
-|------|--------|---------|
-| `HIGH` | 🔴 Red | Telnet (23), SMB (445), RDP (3389), Redis (6379), MongoDB (27017) |
-| `MEDIUM` | 🟡 Yellow | FTP (21), VNC (5900) |
-| `LOW` | 🟢 Green | SSH (22), HTTP (80), HTTPS (443) |
-
-**Top 20 ports scanned by default:**
+Queries the free [ip-api.com](http://ip-api.com) endpoint. No API key required.
 
 ```
-21 · 22 · 23 · 25 · 53 · 80 · 110 · 135 · 139 · 143
-443 · 445 · 3306 · 3389 · 5432 · 5900 · 6379 · 8080 · 8443 · 27017
-```
-
----
-
-### `reputation` - Blocklist & Abuse Check
-```bash
-python ip_toolkit.py reputation <IP>
-```
-
-**DNS Blocklists checked (no API key required):**
-```
-[+] Spamhaus ZEN        - combined spam/exploit blocklist
-[+] Spamhaus XBL        - exploits and botnet IPs
-[+] SpamCop             - spam source blocklist
-[+] SORBS               - spam and open relay blocklist
-[+] Barracuda           - reputation-based blocklist
-```
-
-**Enhanced mode - AbuseIPDB integration (optional):**
-
-Get a free API key at [abuseipdb.com](https://www.abuseipdb.com), then:
-
-```bash
-# Linux / Mac
-export ABUSEIPDB_API_KEY="your_key_here"
-
-# Windows CMD
-set ABUSEIPDB_API_KEY=your_key_here
-
-# Windows PowerShell
-$env:ABUSEIPDB_API_KEY="your_key_here"
-```
-
-With the key set, the tool will also report:
-```
-[+] Abuse confidence score (0–100%)
-[+] Total number of abuse reports
-[+] Date of last report
-[+] Whether the IP is a Tor exit node
+[+] IP Address    - resolved IP
+[+] Country       - registered country
+[+] Region        - state or region
+[+] City          - approximate city
+[+] Coordinates   - latitude and longitude
+[+] Timezone      - local timezone
+[+] ISP           - Internet Service Provider
+[+] Organisation  - network owner
+[+] ASN           - Autonomous System Number
+[+] Proxy/VPN     - YES / NO
+[+] Hosting       - YES / NO (datacenter/cloud)
+[+] Mobile        - YES / NO (cellular network)
 ```
 
 ---
 
 ### `whois` - WHOIS Lookup
-```bash
-python ip_toolkit.py whois <IP or domain>
-```
 
-Uses `python-whois` if installed, with a raw socket fallback so it works even without the library.
+Sends raw WHOIS queries over TCP port 43. Works for both domains and raw IP addresses. For domains it follows IANA referrals automatically to find the correct WHOIS server.
 
-**Returns:**
+**For domains returns:**
 ```
-[+] Organisation   - who owns this IP block or domain
-[+] CIDR / Netblock
-[+] Country
-[+] Abuse contact email
+[+] Domain name
 [+] Registrar
-[+] Registration / expiry dates
+[+] Creation / updated / expiry dates
+[+] DNSSEC status
 [+] Name servers
+```
+
+**For IP addresses returns:**
+```
+[+] Net range / CIDR block
+[+] Network name
+[+] Organisation
+[+] Country
 ```
 
 ---
 
-### `all` - Full Recon
-```bash
-python ip_toolkit.py all <IP or domain> [--timeout SECONDS] [--threads N]
+### `scan` - Port Scanner
+
+Uses Python's `threading` module to probe all ports simultaneously. Only open ports are shown.
+
+**Ports scanned by default:**
+```
+21   FTP        22   SSH        23   Telnet
+25   SMTP       53   DNS        80   HTTP
+110  POP3       143  IMAP       443  HTTPS
+445  SMB        3306 MySQL      3389 RDP
+5900 VNC        6379 Redis      8080 HTTP-Alt
+27017 MongoDB
 ```
 
-Runs all four modules in sequence:
+**Risk ratings:**
+
+| Risk | Colour | Ports |
+|------|--------|-------|
+| `HIGH` | 🔴 Red | Telnet (23), SMB (445), RDP (3389), Redis (6379), MongoDB (27017) |
+| `MEDIUM` | 🟡 Yellow | FTP (21), VNC (5900), SMTP (25) |
+| `LOW` | 🟢 Green | SSH (22), DNS (53), HTTP (80), HTTPS (443), etc. |
+
+---
+
+### `reputation` - Blocklist Check
+
+Checks the IP against 5 DNS-based blocklists. No API key required - uses reverse DNS queries.
+
 ```
-info  →  whois  →  scan  →  reputation
+[+] Spamhaus ZEN   - combined spam and exploit blocklist
+[+] SpamCop        - spam source blocklist
+[+] SORBS          - spam and open relay blocklist
+[+] Spamhaus XBL   - exploits and botnet IPs
+[+] Barracuda      - reputation-based blocklist
 ```
 
-Useful for a complete picture of any target in a single command.
+**How it works:**
+
+```
+IP: 1.2.3.4  →  reversed: 4.3.2.1
+Query: 4.3.2.1.zen.spamhaus.org
+
+resolves  →  LISTED
+NXDOMAIN  →  CLEAN
+```
 
 ---
 
@@ -279,18 +293,8 @@ Useful for a complete picture of any target in a single command.
 ```
 ip-toolkit/
 │
-├── ip_toolkit.py          ← CLI entry point & argument parser
-├── requirements.txt       ← python-whois (optional)
-│
-├── core/
-│   ├── info.py            ← IP geolocation via ip-api.com
-│   ├── scanner.py         ← multi-threaded TCP port scanner
-│   ├── reputation.py      ← DNSBL checks + AbuseIPDB integration
-│   └── whois_lookup.py    ← WHOIS via python-whois / raw socket fallback
-│
-└── utils/
-    ├── display.py         ← ANSI colours, ASCII banner, section headers
-    └── helpers.py         ← IP validation, DNS resolution
+├── ip_toolkit.py    ← entire tool - all modules in one file
+└── README.md        ← you are here
 ```
 
 ---
@@ -298,7 +302,7 @@ ip-toolkit/
 ## `> IP ADDRESS FUNDAMENTALS`
 
 ### What is an IP address?
-An IP address is a unique numerical label assigned to every device on a network. It serves two purposes: identifying the host and providing its location on the network.
+A unique numerical label assigned to every device on a network. It identifies the host and provides its location on the network.
 
 ### Public vs. Private
 
@@ -308,13 +312,12 @@ An IP address is a unique numerical label assigned to every device on a network.
 | Private | Your router | Local network only | `192.168.x.x` · `10.x.x.x` · `172.16–31.x.x` |
 
 ```bash
-# Find your public IP
-curl ifconfig.me
+# Find your public IP (just leave the input blank when running the tool)
 
-# Find your private IP (Windows)
+# Find your private IP on Windows
 ipconfig
 
-# Find your private IP (Linux / Mac)
+# Find your private IP on Linux / Mac
 ip addr show
 ```
 
@@ -325,13 +328,6 @@ ip addr show
 | Static | Never | Servers, websites, DNS resolvers |
 | Dynamic | On reconnect | Home users, mobile devices |
 
-### Resolve a domain to IP
-```bash
-ping google.com
-nslookup google.com
-dig google.com
-```
-
 ---
 
 ## `> CYBERSECURITY CONCEPTS`
@@ -340,53 +336,34 @@ dig google.com
 
 | Port | Service | Risk | Why |
 |------|---------|------|-----|
-| 21 | FTP | MEDIUM | Plaintext credentials, anonymous login |
+| 21 | FTP | MEDIUM | Plaintext credentials, anonymous login possible |
 | 23 | Telnet | HIGH | Fully plaintext - never expose to internet |
-| 135 | MS-RPC | HIGH | Common Windows attack vector |
-| 139 | NetBIOS | HIGH | Information disclosure, legacy Windows |
 | 445 | SMB | HIGH | EternalBlue, WannaCry ransomware vector |
 | 3389 | RDP | HIGH | Brute-force attacks, BlueKeep CVE |
-| 5900 | VNC | MEDIUM | Weak auth by default in many setups |
 | 6379 | Redis | HIGH | No authentication by default |
 | 27017 | MongoDB | HIGH | Often exposed without authentication |
 
-### DNS Blocklists (DNSBL)
+### What is an ASN?
+An Autonomous System Number identifies a network under single administrative control - like Google (`AS15169`), Cloudflare (`AS13335`), or your ISP. Every public IP block belongs to an ASN.
 
-Blocklists are databases of IPs known to send spam, host malware, or run botnets. Checking an IP against a blocklist requires no API - just a reverse DNS query:
-
-```
-# Format:
-<reversed-IP>.<blocklist-host>
-
-# Example: check 1.2.3.4 against Spamhaus ZEN
-4.3.2.1.zen.spamhaus.org
-
-# If the query resolves → IP is LISTED
-# If it throws NXDOMAIN → IP is CLEAN
-```
-
-### WHOIS Protocol
-
-WHOIS (RFC 3912) is a query/response protocol for looking up registration data on IP blocks and domain names. A raw WHOIS query is just plain text sent over a TCP connection to port 43:
-
+### What is WHOIS?
+WHOIS (RFC 3912) is a protocol for querying domain and IP registration data. A raw query is just plain text sent to port 43:
 ```
 →  Connect to whois.iana.org:43
-→  Send: "8.8.8.8\r\n"
-←  Receive: organisation, netblock, country, abuse contact...
+→  Send: "google.com\r\n"
+←  Receive: registrar, dates, name servers...
 ```
 
-### ASN — Autonomous System Number
-
-An ASN identifies a network under a single administrative control (like Google, Cloudflare, or your ISP). Every public IP block is owned by an ASN. Example: `AS15169` is Google LLC.
+### What is a DNS Blocklist?
+A database of IPs known for spam, malware, or botnet activity. Checking an IP requires no API - just a reverse DNS lookup. If the query resolves, the IP is listed. If it returns NXDOMAIN, it's clean.
 
 ---
 
-## `> APIs USED`
+## `> API USED`
 
 | API | Used For | Auth | Rate Limit | Cost |
 |-----|----------|------|------------|------|
 | [ip-api.com](http://ip-api.com) | Geolocation, ISP, flags | None | 45 req/min | Free |
-| [AbuseIPDB](https://www.abuseipdb.com) | Abuse score, reports | API key | 1000 req/day | Free tier |
 
 ---
 
@@ -395,10 +372,9 @@ An ASN identifies a network under a single administrative control (like Google, 
 ```
 [-] Geolocation is approximate - city-level accuracy varies
 [-] ip-api.com free tier limited to 45 requests per minute
-[-] AbuseIPDB requires a free API key for enhanced reports
 [-] IPv4 only - IPv6 not yet supported
 [-] Port scanner uses TCP only - UDP ports not detected
-[-] ANSI colours may not display in older Windows CMD versions
+[-] ANSI colours may not display in some older terminals
 ```
 
 ---
@@ -407,42 +383,40 @@ An ASN identifies a network under a single administrative control (like Google, 
 
 ```
 [ ] IPv6 support
+[ ] Custom port selection from CLI
+[ ] AbuseIPDB integration for detailed abuse reports
 [ ] UDP port scanning
-[ ] CVE lookup for detected service versions
-[ ] Shodan API integration
+[ ] Banner grabbing on open ports
+[ ] Export results to JSON / CSV log file
+[ ] Batch mode - scan multiple targets from a file
 [ ] Traceroute module
-[ ] Batch mode — scan multiple targets from a file
-[ ] Export results to JSON / CSV
-[ ] Config file for API keys and default settings
 ```
 
 ---
 
-## `> CONTRIBUTING`
+## `> WHAT I LEARNED BUILDING THIS`
 
-Pull requests are welcome. If you have an idea for a new module or improvement, open an issue first to discuss it.
-
-```bash
-# Fork the repo, then:
-git checkout -b feature/your-feature-name
-git commit -m "add: your feature description"
-git push origin feature/your-feature-name
-# → open a Pull Request
-```
+- How HTTP works at the raw socket level - no libraries
+- What DNS resolution is and how domains map to IP addresses
+- How the WHOIS protocol works over TCP port 43
+- How IANA referrals chain WHOIS queries to the right server
+- How DNS blocklists work using reverse IP queries
+- How threading works in Python and why it matters for network scanning
+- How `sys.argv` enables CLI argument parsing without any library
+- How to handle real network errors gracefully with try/except
 
 ---
 
 ## `> LICENSE`
 
 ```
-MIT License - do whatever you want with this.
-See LICENSE for full terms.
+MIT License - do whatever you want with this (but only in educational purposes).
 ```
 
 ---
 
 <div align="center">
 
-*Built for learning. Use responsibly.*
+*Built from scratch. No shortcuts. No magic.*
 
 </div>
