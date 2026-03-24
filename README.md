@@ -16,8 +16,8 @@
 ![License](https://img.shields.io/badge/License-MIT-00ff41?style=for-the-badge&labelColor=0d0d0d)
 ![Status](https://img.shields.io/badge/Status-ACTIVE-00ff41?style=for-the-badge&labelColor=0d0d0d)
 
-**A modular command-line OSINT toolkit for investigating IP addresses and domains.**
-*Geolocation. Port scanning. Reputation checks. WHOIS. All in one tool.*
+**A modular command-line OSINT toolkit for investigating IP addresses and domains.**  
+*Geolocation. Port scanning. Reputation checks. WHOIS. All in one tool.*  
 
 </div>
 
@@ -30,9 +30,9 @@
 
 ## `> OVERVIEW`
 
-**IP Toolkit** is a modular command-line OSINT tool built entirely in Python with zero third-party dependencies. It combines four investigation modules into one unified interface - giving you geolocation data, open port detection, blocklist reputation checks, and WHOIS registration data from a single script.
+**IP Toolkit** is a modular command-line OSINT tool built entirely in Python with zero third-party dependencies. It combines four investigation modules into one unified interface - giving you geolocation data, open port detection, blocklist reputation checks, and WHOIS registration data from a single script.  
 
-It supports two modes: an **interactive menu** (just run the script with no arguments) and a **CLI mode** (pass the command and target directly).
+It supports two modes: an **interactive menu** (just run the script with no arguments) and a **CLI mode** (pass the command and target directly).  
 
 ---
 
