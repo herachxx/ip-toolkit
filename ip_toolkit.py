@@ -38,16 +38,19 @@ def clean_date(date_str):
 def save_log(target, modules):
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     with open("ip_log.txt", "a", encoding="utf-8") as f:
-        f.write(f"\n{'=' * 50}\n")
-        f.write(f"  [{timestamp}] {target}\n")
-        f.write(f"{'=' * 50}\n")
+        f.write(f"\n{'=' * 55}\n")
+        f.write(f"  [{timestamp}]  TARGET: {target}\n")
+        f.write(f"{'=' * 55}")
         for section_name, data in modules.items():
+            if not data:
+                continue
             f.write(f"\n  >> {section_name}\n")
+            f.write(f"  {'─' * 40}\n")
             for key, value in data.items():
                 f.write(f"     {key:<16}: {value}\n")
     print(YELLOW + "\n  [~] Saved to ip_log.txt" + RESET)
 
-def resolve(target):
+def resolve(target, exit_on_fail=True):
     if target.replace(".", "").isnumeric():
         return target
     try:
@@ -56,7 +59,9 @@ def resolve(target):
         return ip
     except socket.gaierror:
         print(RED + f"\n [!] Could not resolve '{target}'" + RESET)
-        sys.exit(1)
+        if exit_on_fail:
+            sys.exit(1)
+        return None
 
 def http_get(host, path):
     sock = socket.create_connection((host, 80), timeout=8)
@@ -104,7 +109,6 @@ def get_info(target):
     print(GREEN + f"  Hosting      : " + RESET + (YELLOW + "YES"     + RESET if data["hosting"] else GREEN + "NO" + RESET))
     print(GREEN + f"  Mobile       : " + RESET + (YELLOW + "YES"     + RESET if data["mobile"]  else GREEN + "NO" + RESET))
     section_end()
-
     return {
         "IP Address": data["query"],
         "Country": data["country"],
@@ -118,8 +122,6 @@ def get_info(target):
         "Hosting": "YES" if data["hosting"] else "NO",
         "Mobile": "YES" if data["mobile"] else "NO",
     }
-
-
 
 def get_whois(target):
     section("WHOIS")
@@ -150,7 +152,6 @@ def get_whois(target):
                     break
             if refer:
                 raw = whois_query(refer, target)
-
             fields = {
                 "Domain Name":          None,
                 "Registrar":            None,
@@ -160,7 +161,6 @@ def get_whois(target):
                 "Name Server":          [],
                 "DNSSEC":               None,
             }
-
             for line in raw.splitlines():
                 line = line.strip()
                 for key in fields:
@@ -178,7 +178,6 @@ def get_whois(target):
             print(GREEN + f"  DNSSEC       : {fields['DNSSEC']}"                           + RESET)
             print(GREEN + f"  Name Servers : {', '.join(fields['Name Server'][:4])}"       + RESET)
             section_end()
-            
             return {
                 "Domain":    fields.get("Domain Name", "N/A"),
                 "Registrar": fields.get("Registrar", "N/A"),
@@ -186,7 +185,6 @@ def get_whois(target):
                 "Expires":   clean_date(fields.get("Registry Expiry Date")),
                 "DNSSEC":    fields.get("DNSSEC", "N/A"),
             }
-            
     except Exception as e:
         print(RED + f"  [!] WHOIS failed: {e}" + RESET)
         section_end()
@@ -195,7 +193,6 @@ def get_whois(target):
 def scan_ports(target):
     ip = resolve(target)
     section("PORT SCAN")
-
     ports = {
         21: "FTP",      22: "SSH",       23: "Telnet",
         25: "SMTP",     53: "DNS",       80: "HTTP",
@@ -204,11 +201,9 @@ def scan_ports(target):
         5900: "VNC",    6379: "Redis",   8080: "HTTP-Alt",
         27017: "MongoDB",
     }
-
     print(YELLOW + f"  Scanning {ip} - {len(ports)} ports..." + RESET)
     open_ports = []
     lock = threading.Lock()
-    
     def probe(port, service):
         try:
             sock = socket.create_connection((ip, port), timeout=0.5)
@@ -217,7 +212,6 @@ def scan_ports(target):
                 open_ports.append((port, service))
         except:
             pass
-            
     threads = []
     for port, service in ports.items():
         t = threading.Thread(target=probe, args=(port, service))
@@ -234,7 +228,6 @@ def scan_ports(target):
             risk, color = RISK.get(port, ("LOW", GREEN))
             print(color + f"  {port:<8} {service:<12} {risk}" + RESET)
     section_end()
-
     return {
         "Open Ports": ", ".join(f"{p}({s})" for p, s in open_ports) or "None",
     }
@@ -265,7 +258,6 @@ def check_reputation(target):
     else:
         print(YELLOW + f"\n  Result: IP is listed on one or more blocklists!" + RESET)
     section_end()
-
     return {
         "Result": "LISTED on one or more blocklists" if found else "CLEAN",
     }
@@ -277,6 +269,7 @@ def traceroute(target, hops=20):
     else:
         command = ["traceroute", "-n", "-m", str(hops), target]
     print(YELLOW + f"  Tracing route to {target} (max {hops} hops)...\n" + RESET)
+    hop_lines = []
     try:
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         for line in process.stdout:
@@ -284,10 +277,15 @@ def traceroute(target, hops=20):
             if not line.strip():
                 continue
             print(GREEN + f"  {line}" + RESET)
+            hop_lines.append(line.strip())
         process.wait()
     except Exception as e:
         print(RED + f"  [!] Traceroute failed: {e}" + RESET)
     section_end()
+    return {"Hops": str(len(hop_lines) - 2), "Route": " → ".join(
+        line.split()[-1] for line in hop_lines
+        if line and line[0].isdigit() and line.split()[-1] != "out."
+    )}
 
 # get_info("google.com")
 # get_whois("google.com")
@@ -306,6 +304,13 @@ def print_banner():
   ╚═╝╚═╝            ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝ ╚═╝  ╚═╝╚═╝   ╚═╝  
     """ + RESET)
 
+def ask_hops():
+    hops = input(GREEN + "  Max hops (default 20): " + YELLOW).strip()
+    sys.stdout.write(RESET)
+    if hops.isdigit() and int(hops) >= 1:
+        return int(hops)
+    return 20
+
 def interactive_menu():
     print_banner()
     while True:
@@ -321,38 +326,40 @@ def interactive_menu():
   [3] Port Scan
   [4] Reputation
   [5] Traceroute
-  [6] All
+  [a] All
   [b] Change target
   [q] Quit
         """ + RESET)
         choice = input(GREEN + "  Pick a command: " + YELLOW).strip().lower()
         sys.stdout.write(RESET)
-        if   choice == "q":
+        if choice == "q":
             print(RED + "\n  [~] Goodbye!\n" + RESET)
             break
         elif choice == "b":
             print(YELLOW + "\n  [~] Going back...\n" + RESET)
             continue
-        elif choice == "1": get_info(target)
-        elif choice == "2": get_whois(target)
-        elif choice == "3": scan_ports(target)
-        elif choice == "4": check_reputation(target)
-        elif choice == "5":
-            hops = input(GREEN + "  Max hops (default 20): " + YELLOW).strip()
-            sys.stdout.write(RESET)
-            hops = int(hops) if hops.isdigit() else 20
-            traceroute(target, hops)
-        elif choice == "6":
-            ip = resolve(target)
+        elif choice == "a":
+            ip = resolve(target, exit_on_fail=False)
+            if not ip:
+                continue
+            hops = ask_hops()
             modules = {}
             modules["IP INFO"]    = get_info(ip)          or {}
             modules["WHOIS"]      = get_whois(target)     or {}
             modules["PORT SCAN"]  = scan_ports(ip)        or {}
             modules["REPUTATION"] = check_reputation(ip)  or {}
+            modules["TRACEROUTE"] = traceroute(ip, hops)  or {}
             save_log(target, modules)
+        elif choice == "1": get_info(target)
+        elif choice == "2": get_whois(target)
+        elif choice == "3": scan_ports(target)
+        elif choice == "4": check_reputation(target)
+        elif choice == "5":
+            hops = ask_hops()
+            traceroute(target, hops)
         else:
             print(RED + "\n  [!] Invalid choice.\n" + RESET)
-            
+
 if len(sys.argv) == 1:
     interactive_menu()
 elif len(sys.argv) < 3:
