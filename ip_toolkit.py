@@ -2,6 +2,9 @@ import socket
 import json
 import sys
 import threading
+import datetime
+import subprocess
+import platform
 
 GREEN  = "\033[92m"
 YELLOW = "\033[93m"
@@ -31,6 +34,18 @@ def clean_date(date_str):
     if date_str:
         return date_str.split("T")[0]
     return "N/A"
+
+def save_log(target, modules):
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    with open("ip_log.txt", "a", encoding="utf-8") as f:
+        f.write(f"\n{'=' * 50}\n")
+        f.write(f"  [{timestamp}] {target}\n")
+        f.write(f"{'=' * 50}\n")
+        for section_name, data in modules.items():
+            f.write(f"\n  >> {section_name}\n")
+            for key, value in data.items():
+                f.write(f"     {key:<16}: {value}\n")
+    print(YELLOW + "\n  [~] Saved to ip_log.txt" + RESET)
 
 def resolve(target):
     if target.replace(".", "").isnumeric():
@@ -95,6 +110,22 @@ def get_info(target):
 
     section_end()
 
+    return {
+        "IP Address": data["query"],
+        "Country": data["country"],
+        "City": data["city"],
+        "Region": data["regionName"],
+        "Timezone": data["timezone"],
+        "ISP": data["isp"],
+        "Organisation": data["org"],
+        "ASN": data["as"],
+        "Proxy/VPN": "YES" if data["proxy"] else "NO",
+        "Hosting": "YES" if data["hosting"] else "NO",
+        "Mobile": "YES" if data["mobile"] else "NO",
+    }
+
+
+
 def get_whois(target):
     section("WHOIS")
     try:
@@ -102,6 +133,7 @@ def get_whois(target):
 
         if is_ip:
             raw = whois_query("whois.arin.net", f"+ {target}")
+            result = {}
             print()
             for line in raw.splitlines():
                 line = line.strip()
@@ -111,9 +143,12 @@ def get_whois(target):
                     if line.startswith(prefix):
                         key, val = line.split(":", 1)
                         print(GREEN + f"  {key:<14}: {val.strip()}" + RESET)
+                        result[key] = val.strip()
                         break
+            section_end()
+            return result
+
         else:
-            # Domain WHOIS
             raw = whois_query("whois.iana.org", target)
             refer = None
             for line in raw.splitlines():
@@ -143,18 +178,29 @@ def get_whois(target):
                         elif fields[key] is None:
                             fields[key] = value
 
-            print(GREEN + f"  Domain       : {fields['Domain Name']}"                    + RESET)
-            print(GREEN + f"  Registrar    : {fields['Registrar']}"                      + RESET)
-            print(GREEN + f"  Created      : {clean_date(fields['Creation Date'])}"      + RESET)
-            print(GREEN + f"  Updated      : {clean_date(fields['Updated Date'])}"       + RESET)
+            print(GREEN + f"  Domain       : {fields['Domain Name']}"                      + RESET)
+            print(GREEN + f"  Registrar    : {fields['Registrar']}"                        + RESET)
+            print(GREEN + f"  Created      : {clean_date(fields['Creation Date'])}"        + RESET)
+            print(GREEN + f"  Updated      : {clean_date(fields['Updated Date'])}"         + RESET)
             print(GREEN + f"  Expires      : {clean_date(fields['Registry Expiry Date'])}" + RESET)
-            print(GREEN + f"  DNSSEC       : {fields['DNSSEC']}"                         + RESET)
-            print(GREEN + f"  Name Servers : {', '.join(fields['Name Server'][:4])}"     + RESET)
+            print(GREEN + f"  DNSSEC       : {fields['DNSSEC']}"                           + RESET)
+            print(GREEN + f"  Name Servers : {', '.join(fields['Name Server'][:4])}"       + RESET)
+
+            section_end()
+            return {
+                "Domain":    fields.get("Domain Name", "N/A"),
+                "Registrar": fields.get("Registrar", "N/A"),
+                "Created":   clean_date(fields.get("Creation Date")),
+                "Expires":   clean_date(fields.get("Registry Expiry Date")),
+                "DNSSEC":    fields.get("DNSSEC", "N/A"),
+            }
 
     except Exception as e:
         print(RED + f"  [!] WHOIS failed: {e}" + RESET)
+        section_end()
+        return {}
 
-    section_end()
+
 
 def scan_ports(target):
     ip = resolve(target)
@@ -204,6 +250,10 @@ def scan_ports(target):
 
     section_end()
 
+    return {
+        "Open Ports": ", ".join(f"{p}({s})" for p, s in open_ports) or "None",
+    }
+
 def check_reputation(target):
     ip = resolve(target)
     section("REPUTATION")
@@ -234,11 +284,42 @@ def check_reputation(target):
 
     section_end()
 
+    return {
+        "Result": "LISTED on one or more blocklists" if found else "CLEAN",
+    }
+
+def traceroute(target):
+    section("TRACEROUTE")
+
+    if platform.system() == "Windows":
+        command = ["tracert", "-d", "-h", "20", target]
+    else:
+        command = ["traceroute", "-n", "-m", "20", target]
+
+    print(YELLOW + f"  Tracing route to {target}...\n" + RESET)
+
+    try:
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        for line in process.stdout:
+            line = line.decode(errors="replace").rstrip()
+            if not line.strip():
+                continue
+            print(GREEN + f"  {line}" + RESET)
+
+        process.wait()
+
+    except Exception as e:
+        print(RED + f"  [!] Traceroute failed: {e}" + RESET)
+
+    section_end()
+
 # get_info("google.com")
 # get_whois("google.com")
 # scan_ports("google.com")
 # check_reputation("8.8.8.8")
 # check_reputation("185.220.101.1")
+# traceroute("google.com")
 
 def print_banner():
     print(CYAN + BOLD + """
@@ -262,12 +343,13 @@ def interactive_menu():
             break
 
         print(CYAN + """
-  [1] IP Info
-  [2] WHOIS
-  [3] Port Scan
-  [4] Reputation
-  [5] All
-  [0] Quit
+    [1] IP Info
+    [2] WHOIS
+    [3] Port Scan
+    [4] Reputation
+    [5] All
+    [6] Traceroute
+    [0] Quit
         """ + RESET)
 
         choice = input(GREEN + "  Pick a command: " + YELLOW).strip()
@@ -279,10 +361,14 @@ def interactive_menu():
         elif choice == "4": check_reputation(target)
         elif choice == "5":
             ip = resolve(target)
-            get_info(ip)
-            get_whois(target)
-            scan_ports(ip)
-            check_reputation(ip)
+            modules = {}
+            modules["IP INFO"] = get_info(ip) or {}
+            modules["WHOIS"] = get_whois(target) or {}
+            modules["PORT SCAN"] = scan_ports(ip) or {}
+            modules["REPUTATION"] = check_reputation(ip) or {}
+            save_log(target, modules)
+        elif choice == "6":
+            traceroute(target)
         elif choice == "0":
             print(RED + "\n  [~] Goodbye!\n" + RESET)
             break
@@ -294,7 +380,7 @@ if len(sys.argv) == 1:
 
 elif len(sys.argv) < 3:
     print(YELLOW + "\n  Usage: python ip_toolkit.py <command> <target>" + RESET)
-    print(YELLOW +   "  Commands: info | whois | scan | reputation | all\n" + RESET)
+    print(YELLOW +   "  Commands: info | whois | scan | reputation | traceroute | all\n" + RESET)
     sys.exit(0)
 
 else:
@@ -305,11 +391,14 @@ else:
     elif command == "whois":        get_whois(target)
     elif command == "scan":         scan_ports(target)
     elif command == "reputation":   check_reputation(target)
+    elif command == "traceroute":   traceroute(target)
     elif command == "all":
-        get_info(target)
-        get_whois(target)
-        scan_ports(target)
-        check_reputation(target)
+        modules = {}
+        modules["IP INFO"] = get_info(target) or {}
+        modules["WHOIS"] = get_whois(target) or {}
+        modules["PORT SCAN"] = scan_ports(target) or {}
+        modules["REPUTATION"] = check_reputation(target) or {}
+        save_log(target, modules)
     else:
         print(RED + f"\n  [!] Unknown command: '{command}'" + RESET)
         print(YELLOW + "  Commands: info | whois | scan | reputation | all\n" + RESET)
