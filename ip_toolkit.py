@@ -62,7 +62,6 @@ def http_get(host, path):
     sock = socket.create_connection((host, 80), timeout=8)
     request = f"GET {path} HTTP/1.1\r\nHost: {host}\r\nConnection: close\r\n\r\n"
     sock.sendall(request.encode())
-
     response = b""
     while True:
         chunk = sock.recv(4096)
@@ -75,7 +74,6 @@ def http_get(host, path):
 def whois_query(host, query):
     sock = socket.create_connection((host, 43), timeout=8)
     sock.sendall((query + "\r\n").encode())
-
     response = b""
     while True:
         chunk = sock.recv(4096)
@@ -90,11 +88,9 @@ def get_info(target):
     section("IP INFO")
     body = http_get("ip-api.com", f"/json/{ip}?fields=status,message,query,country,countryCode,regionName,city,zip,lat,lon,timezone,isp,org,as,mobile,proxy,hosting")
     data = json.loads(body)
-
     if data["status"] != "success":
         print(RED + f"  [!] Error: {data.get('message', 'unknown')}" + RESET)
         return
-
     print(GREEN + f"  IP Address   : {data['query']}"    + RESET)
     print(GREEN + f"  Country      : {data['country']}"    + RESET)
     print(GREEN + f"  Region       : {data['regionName']}" + RESET)
@@ -107,7 +103,6 @@ def get_info(target):
     print(GREEN + f"  Proxy/VPN    : " + RESET + (RED    + "YES (!)" + RESET if data["proxy"]   else GREEN + "NO" + RESET))
     print(GREEN + f"  Hosting      : " + RESET + (YELLOW + "YES"     + RESET if data["hosting"] else GREEN + "NO" + RESET))
     print(GREEN + f"  Mobile       : " + RESET + (YELLOW + "YES"     + RESET if data["mobile"]  else GREEN + "NO" + RESET))
-
     section_end()
 
     return {
@@ -130,7 +125,6 @@ def get_whois(target):
     section("WHOIS")
     try:
         is_ip = target.replace(".", "").isnumeric()
-
         if is_ip:
             raw = whois_query("whois.arin.net", f"+ {target}")
             result = {}
@@ -147,7 +141,6 @@ def get_whois(target):
                         break
             section_end()
             return result
-
         else:
             raw = whois_query("whois.iana.org", target)
             refer = None
@@ -177,7 +170,6 @@ def get_whois(target):
                             fields[key].append(value)
                         elif fields[key] is None:
                             fields[key] = value
-
             print(GREEN + f"  Domain       : {fields['Domain Name']}"                      + RESET)
             print(GREEN + f"  Registrar    : {fields['Registrar']}"                        + RESET)
             print(GREEN + f"  Created      : {clean_date(fields['Creation Date'])}"        + RESET)
@@ -185,8 +177,8 @@ def get_whois(target):
             print(GREEN + f"  Expires      : {clean_date(fields['Registry Expiry Date'])}" + RESET)
             print(GREEN + f"  DNSSEC       : {fields['DNSSEC']}"                           + RESET)
             print(GREEN + f"  Name Servers : {', '.join(fields['Name Server'][:4])}"       + RESET)
-
             section_end()
+            
             return {
                 "Domain":    fields.get("Domain Name", "N/A"),
                 "Registrar": fields.get("Registrar", "N/A"),
@@ -194,13 +186,11 @@ def get_whois(target):
                 "Expires":   clean_date(fields.get("Registry Expiry Date")),
                 "DNSSEC":    fields.get("DNSSEC", "N/A"),
             }
-
+            
     except Exception as e:
         print(RED + f"  [!] WHOIS failed: {e}" + RESET)
         section_end()
         return {}
-
-
 
 def scan_ports(target):
     ip = resolve(target)
@@ -216,10 +206,9 @@ def scan_ports(target):
     }
 
     print(YELLOW + f"  Scanning {ip} - {len(ports)} ports..." + RESET)
-
     open_ports = []
     lock = threading.Lock()
-
+    
     def probe(port, service):
         try:
             sock = socket.create_connection((ip, port), timeout=0.5)
@@ -228,18 +217,15 @@ def scan_ports(target):
                 open_ports.append((port, service))
         except:
             pass
-
+            
     threads = []
     for port, service in ports.items():
         t = threading.Thread(target=probe, args=(port, service))
         threads.append(t)
         t.start()
-
     for t in threads:
         t.join()
-
     open_ports.sort()
-
     if not open_ports:
         print(YELLOW + "  No open ports found." + RESET)
     else:
@@ -247,7 +233,6 @@ def scan_ports(target):
         for port, service in open_ports:
             risk, color = RISK.get(port, ("LOW", GREEN))
             print(color + f"  {port:<8} {service:<12} {risk}" + RESET)
-
     section_end()
 
     return {
@@ -266,7 +251,6 @@ def check_reputation(target):
     ]
     reversed_ip = ".".join(reversed(ip.split(".")))
     print(YELLOW + f"  Checking {ip} against {len(blocklists)} blocklists...\n" + RESET)
-
     found = False
     for bl_host, bl_name in blocklists:
         query = f"{reversed_ip}.{bl_host}"
@@ -276,42 +260,33 @@ def check_reputation(target):
             found = True
         except socket.gaierror:
             print(GREEN + f"  [CLEAN]   {bl_name}" + RESET)
-
     if not found:
         print(YELLOW + f"\n  Result: IP appears clean across all blocklists." + RESET)
     else:
         print(YELLOW + f"\n  Result: IP is listed on one or more blocklists!" + RESET)
-
     section_end()
 
     return {
         "Result": "LISTED on one or more blocklists" if found else "CLEAN",
     }
 
-def traceroute(target):
+def traceroute(target, hops=20):
     section("TRACEROUTE")
-
     if platform.system() == "Windows":
-        command = ["tracert", "-d", "-h", "20", target]
+        command = ["tracert", "-d", "-h", str(hops), target]
     else:
-        command = ["traceroute", "-n", "-m", "20", target]
-
-    print(YELLOW + f"  Tracing route to {target}...\n" + RESET)
-
+        command = ["traceroute", "-n", "-m", str(hops), target]
+    print(YELLOW + f"  Tracing route to {target} (max {hops} hops)...\n" + RESET)
     try:
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
         for line in process.stdout:
             line = line.decode(errors="replace").rstrip()
             if not line.strip():
                 continue
             print(GREEN + f"  {line}" + RESET)
-
         process.wait()
-
     except Exception as e:
         print(RED + f"  [!] Traceroute failed: {e}" + RESET)
-
     section_end()
 
 # get_info("google.com")
@@ -335,59 +310,58 @@ def interactive_menu():
     print_banner()
     while True:
         print(CYAN + "  ─" * 25 + RESET)
-        target = input(GREEN + "\n  Enter target (IP or domain): " + YELLOW).strip()
+        target = input(GREEN + "\n  Enter target (IP/domain) or 'q' to quit: " + YELLOW).strip()
         sys.stdout.write(RESET)
-
         if not target or target.lower() == "q":
             print(RED + "\n  [~] Goodbye!\n" + RESET)
             break
-
         print(CYAN + """
-    [1] IP Info
-    [2] WHOIS
-    [3] Port Scan
-    [4] Reputation
-    [5] Traceroute
-    [6] All
-    [0] Quit
+  [1] IP Info
+  [2] WHOIS
+  [3] Port Scan
+  [4] Reputation
+  [5] Traceroute
+  [6] All
+  [b] Change target
+  [q] Quit
         """ + RESET)
-
-        choice = input(GREEN + "  Pick a command: " + YELLOW).strip()
+        choice = input(GREEN + "  Pick a command: " + YELLOW).strip().lower()
         sys.stdout.write(RESET)
-
-        if   choice == "1": get_info(target)
+        if   choice == "q":
+            print(RED + "\n  [~] Goodbye!\n" + RESET)
+            break
+        elif choice == "b":
+            print(YELLOW + "\n  [~] Going back...\n" + RESET)
+            continue
+        elif choice == "1": get_info(target)
         elif choice == "2": get_whois(target)
         elif choice == "3": scan_ports(target)
         elif choice == "4": check_reputation(target)
         elif choice == "5":
-            traceroute(target)
+            hops = input(GREEN + "  Max hops (default 20): " + YELLOW).strip()
+            sys.stdout.write(RESET)
+            hops = int(hops) if hops.isdigit() else 20
+            traceroute(target, hops)
         elif choice == "6":
             ip = resolve(target)
             modules = {}
-            modules["IP INFO"] = get_info(ip) or {}
-            modules["WHOIS"] = get_whois(target) or {}
-            modules["PORT SCAN"] = scan_ports(ip) or {}
-            modules["REPUTATION"] = check_reputation(ip) or {}
-            modules["TRACEROUTE"] = traceroute(ip) or {}
+            modules["IP INFO"]    = get_info(ip)          or {}
+            modules["WHOIS"]      = get_whois(target)     or {}
+            modules["PORT SCAN"]  = scan_ports(ip)        or {}
+            modules["REPUTATION"] = check_reputation(ip)  or {}
             save_log(target, modules)
-        elif choice == "0":
-            print(RED + "\n  [~] Goodbye!\n" + RESET)
-            break
         else:
             print(RED + "\n  [!] Invalid choice.\n" + RESET)
-
+            
 if len(sys.argv) == 1:
     interactive_menu()
-
 elif len(sys.argv) < 3:
     print(YELLOW + "\n  Usage: python ip_toolkit.py <command> <target>" + RESET)
     print(YELLOW +   "  Commands: info | whois | scan | reputation | traceroute | all\n" + RESET)
     sys.exit(0)
-
 else:
     command = sys.argv[1].lower()
     target  = sys.argv[2]
-
     if command == "info":           get_info(target)
     elif command == "whois":        get_whois(target)
     elif command == "scan":         scan_ports(target)
