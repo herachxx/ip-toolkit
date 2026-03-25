@@ -38,17 +38,17 @@ It supports two modes: an **interactive menu** (just run the script with no argu
 ## `> FEATURES`
 
 ```
-[+] IP geolocation        - country, city, region, coordinates, timezone
+[+] IP geolocation - country, city, region, coordinates, timezone
 [+] ISP, organisation, and ASN identification
 [+] VPN / proxy / hosting / mobile detection
-[+] WHOIS lookup          - works for both domains and raw IP addresses
+[+] WHOIS lookup - works for both domains and raw IP addresses
 [+] Multi-threaded port scanner with risk ratings (HIGH / MEDIUM / LOW)
 [+] DNS blocklist check across 5 major blocklists
-[+] Traceroute            - network path with configurable hop limit
-[+] Reverse DNS           - discover hostnames behind an IP
-[+] Structured log file   - timestamped, auto-saved on every full scan
-[+] Interactive menu      - back button, quit anywhere, hop count input
-[+] CLI mode              - pass commands directly from the terminal
+[+] Traceroute - network path with configurable hop limit
+[+] Reverse DNS - discover hostnames behind an IP
+[+] Structured log file - timestamped, auto-saved on every full scan
+[+] Interactive menu - back button, quit anywhere, hop count input
+[+] CLI mode - pass commands directly from the terminal
 [+] Automatic domain → IP resolution
 [+] Zero third-party dependencies - pure Python standard library
 [+] Colour-coded terminal output
